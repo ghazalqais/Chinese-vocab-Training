@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chinese Tone Trainer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background-color: #d32f2f;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    nav {
+      background-color: #fff;
+      border-bottom: 2px solid #d32f2f;
+      padding: 10px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: inline-block;
+    }
+    nav > ul > li {
+      display: inline-block;
+      position: relative;
+      margin: 0 15px;
+    }
+    nav > ul > li > a, nav button {
+      text-decoration: none;
+      color: #d32f2f;
+      font-weight: bold;
+      padding: 10px;
+      display: inline-block;
+    }
+    nav > ul > li:hover > ul {
+      display: block;
+    }
+    nav > ul > li > ul {
+      display: none;
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #d32f2f;
+      min-width: 150px;
+      z-index: 1;
+      left: 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    nav > ul > li > ul > li > a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #d32f2f;
+    }
+    nav > ul > li > ul > li > a:hover {
+      background-color: #ffebee;
+    }
+    nav button {
+      background-color: #d32f2f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-left: 20px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    nav button:hover {
+      background-color: #b71c1c;
+    }
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #d32f2f;
+      border-bottom: 2px solid #d32f2f;
+      padding-bottom: 5px;
+    }
+    h3 {
+      color: #d32f2f;
+      margin-top: 15px;
+    }
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+    }
+    .word-card {
+      background-color: white;
+      border: 1px solid #ddd;
+      padding: 20px;
+      text-align: center;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .word-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .word-card .character {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .word-card .pinyin {
+      color: #666;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+    .word-card .meaning {
+      color: #333;
+      font-size: 16px;
+    }
+    .word-card .audio-btn {
+      margin-top: 10px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .word-card .audio-btn:hover {
+      background-color: #e0e0e0;
+    }
+    .tone-indicator {
+      margin-top: 5px;
+      display: flex;
+      justify-content: center;
+      height: 20px;
+    }
+    .tone-line {
+      stroke: #d32f2f;
+      stroke-width: 2px;
+      fill: none;
+    }
+    
+    #quiz-mode {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .quiz-container {
+      position: relative;
+    }
+    .quiz-progress {
+      height: 8px;
+      background-color: #f0f0f0;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .quiz-progress-bar {
+      height: 100%;
+      background-color: #d32f2f;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .quiz-question {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .quiz-character {
+      font-size: 48px;
+      margin-bottom: 10px;
+      color: #d32f2f;
+    }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .quiz-options button {
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #d32f2f;
+      color: #d32f2f;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .quiz-options button:hover {
+      background-color: #ffebee;
+    }
+    .quiz-options button.correct {
+      background-color: #c8e6c9;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+    .quiz-options button.incorrect {
+      background-color: #ffcdd2;
+      border-color: #f44336;
+      color: #c62828;
+    }
+    .quiz-hint {
+      font-style: italic;
+      color: #666;
+      margin: 10px 0;
+    }
+    .quiz-feedback {
+      margin: 20px 0;
+      font-weight: bold;
+      min-height: 24px;
+      transition: opacity 0.3s;
+    }
+    #quiz-mode .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    #quiz-mode button {
+      background-color: #d32f2f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    #quiz-mode button:hover {
+      background-color: #b71c1c;
+    }
+    #quiz-mode button.secondary {
+      background-color: #757575;
+    }
+    #quiz-mode button.secondary:hover {
+      background-color: #616161;
+    }
+    .tone-chart {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+    }
+    .tone-chart-column {
+      text-align: center;
+      flex: 1;
+    }
+    .tone-chart-column h3 {
+      color: #d32f2f;
+      margin-top: 0;
+    }
+    .tone-chart-column svg {
+      width: 100%;
+      max-width: 120px;
+    }
+    .tone-visual {
+      margin-top: 15px;
+    }
+    .quiz-settings {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      text-align: left;
+    }
+    .quiz-settings h3 {
+      margin-top: 0;
+      color: #d32f2f;
+    }
+    .settings-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .category-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .settings-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #d32f2f;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .back-to-top:hover {
+      background-color: #b71c1c;
+    }
+    .category-section {
+      margin-top: 20px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #ddd;
+      margin-top: 40px;
+    }
+    @media (max-width: 768px) {
+      .word-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+      .quiz-options {
+        grid-template-columns: 1fr;
+      }
+      nav > ul > li {
+        margin: 0 5px;
+      }
+    }
+    .stat-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .stat-box {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      min-width: 100px;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #d32f2f;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+    }
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .category-tab {
+      padding: 10px 15px;
+      background-color: #f0f0f0;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .category-tab:hover, .category-tab.active {
+      background-color: #d32f2f;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chinese Tone Trainer</h1>
+    <p>Master the four tones of Mandarin Chinese through practice and quizzes</p>
+  </header>
+  <nav>
+    <ul>
+      <li>
+        <a href="#tones">Tones</a>
+        <ul>
+          <li><a href="#first-tone">First Tone</a></li>
+          <li><a href="#second-tone">Second Tone</a></li>
+          <li><a href="#third-tone">Third Tone</a></li>
+          <li><a href="#fourth-tone">Fourth Tone</a></li>
+          <li><a href="#neutral-tone">Neutral Tone</a></li>
+          <li><a href="#tone-sandhi">Tone Sandhi</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#categories">Categories</a>
+        <ul>
+          <li><a href="#greetings">Greetings & Conversations</a></li>
+          <li><a href="#classroom">Classroom Expressions</a></li>
+          <li><a href="#monosyllabic">Monosyllabic Words</a></li>
+          <li><a href="#disyllabic">Disyllabic Words</a></li>
+          <li><a href="#family">Family Terms</a></li>
+          <li><a href="#nationalities">Nationalities & Identities</a></li>
+          <li><a href="#pronouns">Personal Pronouns</a></li>
+          <li><a href="#questions">Question Words</a></li>
+          <li><a href="#verbs">Basic Verbs</a></li>
+          <li><a href="#strokes">Character Strokes</a></li>
+        </ul>
+      </li>
+      <li><a href="#tone-guide">Tone Guide</a></li>
+    </ul>
+    <button id="quiz-mode-btn">Quiz Mode</button>
+  </nav>
+  
+  <main id="browse-content">
+    <section id="tone-guide">
+      <h2>Chinese Tone Guide</h2>
+      <div class="tone-chart">
+        <div class="tone-chart-column">
+          <h3>First Tone (ˉ)</h3>
+          <p>High and level</p>
+          <svg height="60" width="120">
+            <line x1="10" y1="10" x2="110" y2="10" class="tone-line" />
+            <text x="60" y="40" fill="#d32f2f" text-anchor="middle">mā</text>
+          </svg>
+          <p>Example: 妈 (mā) - mother</p>
+        </div>
+        <div class="tone-chart-column">
+          <h3>Second Tone (ˊ)</h3>
+          <p>Rising</p>
+          <svg height="60" width="120">
+            <line x1="10" y1="50" x2="110" y2="10" class="tone-line" />
+            <text x="60" y="40" fill="#d32f2f" text-anchor="middle">má</text>
+          </svg>
+          <p>Example: 麻 (má) - hemp</p>
+        </div>
+        <div class="tone-chart-column">
+          <h3>Third Tone (ˇ)</h3>
+          <p>Falling then rising</p>
+          <svg height="60" width="120">
+            <path d="M10,25 Q60,60 110,25" class="tone-line" />
+            <text x="60" y="40" fill="#d32f2f" text-anchor="middle">mǎ</text>
+          </svg>
+          <p>Example: 马 (mǎ) - horse</p>
+        </div>
+        <div class="tone-chart-column">
+          <h3>Fourth Tone (ˋ)</h3>
+          <p>Falling</p>
+          <svg height="60" width="120">
+            <line x1="10" y1="10" x2="110" y2="50" class="tone-line" />
+            <text x="60" y="40" fill="#d32f2f" text-anchor="middle">mà</text>
+          </svg>
+          <p>Example: 骂 (mà) - to scold</p>
+        </div>
+      </div>
+      
+      <div class="category-section" id="tone-sandhi">
+        <h3>Tone Sandhi Rules</h3>
+        <p><strong>1. Third Tone + Third Tone:</strong> When two third tones appear together, the first one changes to second tone.</p>
+        <p>Example: 你好 (nǐ hǎo) is pronounced as (ní hǎo)</p>
+        
+        <p><strong>2. 不 (bù) Tone Change:</strong> The word 不 (bù) changes from 4th tone to 2nd tone (bú) when followed by another 4th tone word.</p>
+        <p>Example: 不对 (bú duì) - not correct</p>
+      </div>
+      
+      <div class="category-section" id="strokes">
+        <h3>Basic Character Strokes</h3>
+        <div class="word-grid">
+          <div class="word-card">
+            <div class="character">一</div>
+            <div class="pinyin">yī</div>
+            <div class="meaning">héng (横) - horizontal stroke</div>
+            <div class="meaning">Direction: →</div>
+          </div>
+          <div class="word-card">
+            <div class="character">十</div>
+            <div class="pinyin">shí</div>
+            <div class="meaning">shù (竖) - vertical stroke</div>
+            <div class="meaning">Direction: ↓</div>
+          </div>
+          <div class="word-card">
+            <div class="character">人</div>
+            <div class="pinyin">rén</div>
+            <div class="meaning">piě (撇) - left-falling stroke</div>
+            <div class="meaning">Direction: ↙</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section id="tones">
+      <h2>Four Tones of Mandarin Chinese</h2>
+      
+      <div class="category-tabs">
+        <div class="category-tab active" data-target="first-tone">First Tone</div>
+        <div class="category-tab" data-target="second-tone">Second Tone</div>
+        <div class="category-tab" data-target="third-tone">Third Tone</div>
+        <div class="category-tab" data-target="fourth-tone">Fourth Tone</div>
+        <div class="category-tab" data-target="neutral-tone">Neutral Tone</div>
+      </div>
+      
+      <div id="first-tone" class="tone-section">
+        <h3>First Tone Words (ˉ)</h3>
+        <p>First tone is high and level.</p>
+        <div class="word-grid" id="first-tone-grid"></div>
+      </div>
+      
+      <div id="second-tone" class="tone-section" style="display: none;">
+        <h3>Second Tone Words (ˊ)</h3>
+        <p>Second tone rises from mid to high.</p>
+        <div class="word-grid" id="second-tone-grid"></div>
+      </div>
+      
+      <div id="third-tone" class="tone-section" style="display: none;">
+        <h3>Third Tone Words (ˇ)</h3>
+        <p>Third tone falls then rises.</p>
+        <div class="word-grid" id="third-tone-grid"></div>
+      </div>
+      
+      <div id="fourth-tone" class="tone-section" style="display: none;">
+        <h3>Fourth Tone Words (ˋ)</h3>
+        <p>Fourth tone falls from high to low.</p>
+        <div class="word-grid" id="fourth-tone-grid"></div>
+      </div>
+      
+      <div id="neutral-tone" class="tone-section" style="display: none;">
+        <h3>Neutral Tone Words</h3>
+        <p>Neutral tone is light and short with no specific pitch.</p>
+        <div class="word-grid" id="neutral-tone-grid"></div>
+      </div>
+    </section>
+    
+    <section id="categories">
+      <h2>Word Categories</h2>
+      <div class="category-tabs">
+        <div class="category-tab active" data-target="greetings">Greetings</div>
+        <div class="category-tab" data-target="classroom">Classroom</div>
+        <div class="category-tab" data-target="monosyllabic">Monosyllabic</div>
+        <div class="category-tab" data-target="disyllabic">Disyllabic</div>
+        <div class="category-tab" data-target="family">Family</div>
+        <div class="category-tab" data-target="nationalities">Nationalities</div>
+        <div class="category-tab" data-target="pronouns">Pronouns</div>
+        <div class="category-tab" data-target="questions">Questions</div>
+        <div class="category-tab" data-target="verbs">Verbs</div>
+      </div>
+      
+      <div id="greetings" class="category-section">
+        <h3>Greetings & Conversations</h3>
+        <div class="word-grid" id="greetings-grid"></div>
+      </div>
+      
+      <div id="classroom" class="category-section" style="display: none;">
+        <h3>Classroom Expressions</h3>
+        <div class="word-grid" id="classroom-grid"></div>
+      </div>
+      
+      <div id="monosyllabic" class="category-section" style="display: none;">
+        <h3>Monosyllabic Words</h3>
+        <div class="word-grid" id="monosyllabic-grid"></div>
+      </div>
+      
+      <div id="disyllabic" class="category-section" style="display: none;">
+        <h3>Disyllabic Words</h3>
+        <div class="word-grid" id="disyllabic-grid"></div>
+      </div>
+      
+      <div id="family" class="category-section" style="display: none;">
+        <h3>Family Terms</h3>
+        <div class="word-grid" id="family-grid"></div>
+      </div>
+      
+      <div id="nationalities" class="category-section" style="display: none;">
+        <h3>Nationalities & Identities</h3>
+        <div class="word-grid" id="nationalities-grid"></div>
+      </div>
+      
+      <div id="pronouns" class="category-section" style="display: none;">
+        <h3>Personal Pronouns</h3>
+        <div class="word-grid" id="pronouns-grid"></div>
+      </div>
+      
+      <div id="questions" class="category-section" style="display: none;">
+        <h3>Question Words and Particles</h3>
+        <div class="word-grid" id="questions-grid"></div>
+      </div>
+      
+      <div id="verbs" class="category-section" style="display: none;">
+        <h3>Basic Verbs</h3>
+        <div class="word-grid" id="verbs-grid"></div>
+      </div>
+    </section>
+  </main>
+  
+  <div id="quiz-mode" style="display: none;">
+    <h2>Mandarin Tone Quiz</h2>
+    <div class="stat-container">
+      <div class="stat-box">
+        <div class="stat-number" id="stat-correct">0</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="stat-total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="stat-accuracy">0%</div>
+        <div class="stat-label">Accuracy</div>
+      </div>
+    </div>
+    
+    <div class="quiz-settings">
+      <h3>Quiz Settings</h3>
+      <div class="settings-row">
+        <h4>Question Type:</h4>
+        <div class="settings-option">
+          <input type="checkbox" id="quiz-type-tone" checked>
+          <label for="quiz-type-tone">Tone Recognition</label>
+        </div>
+        <div class="settings-option">
+          <input type="checkbox" id="quiz-type-meaning" checked>
+          <label for="quiz-type-meaning">Meaning Recognition</label>
+        </div>
+      </div>
+      <div class="settings-row">
+        <h4>Word Categories:</h4>
+        <div class="category-row">
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-greetings" checked>
+            <label for="quiz-cat-greetings">Greetings</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-classroom" checked>
+            <label for="quiz-cat-classroom">Classroom</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-monosyllabic" checked>
+            <label for="quiz-cat-monosyllabic">Monosyllabic</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-disyllabic" checked>
+            <label for="quiz-cat-disyllabic">Disyllabic</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-family">
+            <label for="quiz-cat-family">Family</label>
+          </div>
+        </div>
+        <div class="category-row">
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-nationalities">
+            <label for="quiz-cat-nationalities">Nationalities</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-pronouns">
+            <label for="quiz-cat-pronouns">Pronouns</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-questions">
+            <label for="quiz-cat-questions">Questions</label>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" id="quiz-cat-verbs">
+            <label for="quiz-cat-verbs">Verbs</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="quiz-container">
+      <div class="quiz-progress">
+        <div class="quiz-progress-bar" id="quiz-progress-bar"></div>
+      </div>
+      <div class="quiz-character" id="quiz-character"></div>
+      <div class="quiz-question" id="quiz-question"></div>
+      <div id="quiz-options" class="quiz-options"></div>
+      <div id="quiz-hint" class="quiz-hint"></div>
+      <div id="quiz-feedback" class="quiz-feedback"></div>
+    </div>
+    
+    <div class="button-row">
+      <button id="next-question">Next Question</button>
+      <button id="back-to-browse" class="secondary">Back to Browse</button>
+    </div>
+  </div>
+  
+  <a href="#" class="back-to-top" id="back-to-top">↑</a>
+  
+  <footer>
+    <p>Chinese Tone Trainer - An interactive tool to practice Mandarin Chinese tones</p>
+  </footer>
+  
+  <script>
+    // Define all word data by categories
+    const words = [
+      // Greetings & Conversations
+      { char: '你好', pinyin: 'nǐ hǎo', tone: '3rd + 3rd → 2nd + 3rd', meaning: 'Hello! [singular you]', category: 'greetings' },
+      { char: '您好', pinyin: 'nín hǎo', tone: '2nd + 3rd', meaning: 'Hello! [polite form]', category: 'greetings' },
+      { char: '你们好', pinyin: 'nǐmen hǎo', tone: '3rd + neutral + 3rd', meaning: 'Hello! [plural you]', category: 'greetings' },
+      { char: '对不起', pinyin: 'duìbuqǐ', tone: '4th + 4th + 3rd', meaning: "I'm sorry!", category: 'greetings' },
+      { char: '没关系', pinyin: 'méi guānxi', tone: '2nd + 1st + 4th', meaning: "That's OK!", category: 'greetings' },
+      { char: '谢谢', pinyin: 'xièxie', tone: '4th + neutral', meaning: 'Thank you!', category: 'greetings' },
+      { char: '不谢', pinyin: 'bú xiè', tone: '2nd + 4th', meaning: "You're welcome!", category: 'greetings' },
+      { char: '谢谢你', pinyin: 'xièxie nǐ', tone: '4th + neutral + 3rd', meaning: 'Thank you! [to one person]', category: 'greetings' },
+      { char: '不客气', pinyin: 'bú kèqi', tone: '2nd + 4th + 4th', meaning: "You're welcome!", category: 'greetings' },
+      { char: '再见', pinyin: 'zàijiàn', tone: '4th + 4th', meaning: 'Goodbye!', category: 'greetings' },
+      
+      // Classroom Expressions
+      { char: '上课', pinyin: 'shàng kè', tone: '4th + 4th', meaning: 'Class begins!', category: 'classroom' },
+      { char: '下课', pinyin: 'xià kè', tone: '4th + 4th', meaning: 'Class is over!', category: 'classroom' },
+      { char: '现在休息', pinyin: 'xiànzài xiūxi', tone: '4th + 4th + 1st + 1st', meaning: 'Take a break now!', category: 'classroom' },
+      { char: '看黑板', pinyin: 'kàn hēibǎn', tone: '4th + 1st + 3rd', meaning: 'Look at the blackboard!', category: 'classroom' },
+      { char: '跟我读', pinyin: 'gēn wǒ dú', tone: '1st + 3rd + 2nd', meaning: 'Read after me!', category: 'classroom' },
+      { char: '打开书', pinyin: 'dǎkāi shū', tone: '3rd + 1st + 1st', meaning: 'Open your book.', category: 'classroom' },
+      { char: '请大声读', pinyin: 'qǐng dà shēng dú', tone: '3rd + 4th + 1st + 2nd', meaning: 'Read aloud.', category: 'classroom' },
+      { char: '再读一遍', pinyin: 'zài dú yī biàn', tone: '4th + 2nd + 1st + 4th', meaning: 'Read once again.', category: 'classroom' },
+      { char: '一起读', pinyin: 'yìqǐ dú', tone: '4th + 3rd + 2nd', meaning: 'Read together.', category: 'classroom' },
+      { char: '有问题吗', pinyin: 'yǒu wèntí ma', tone: '3rd + 4th + 2nd + neutral', meaning: 'Any questions?', category: 'classroom' },
+      
+      // Monosyllabic Words with Pictures
+      { char: '衣', pinyin: 'yī', tone: '1st', meaning: 'Clothes', category: 'monosyllabic' },
+      { char: '五', pinyin: 'wǔ', tone: '3rd', meaning: 'Five', category: 'monosyllabic' },
+      { char: '鱼', pinyin: 'yú', tone: '2nd', meaning: 'Fish', category: 'monosyllabic' },
+      { char: '耳', pinyin: 'ěr', tone: '3rd', meaning: 'Ear', category: 'monosyllabic' },
+      { char: '笔', pinyin: 'bǐ', tone: '3rd', meaning: 'Pen', category: 'monosyllabic' },
+      { char: '猫', pinyin: 'māo', tone: '1st', meaning: 'Cat', category: 'monosyllabic' },
+      { char: '岛', pinyin: 'dǎo', tone: '3rd', meaning: 'Island', category: 'monosyllabic' },
+      { char: '花', pinyin: 'huā', tone: '1st', meaning: 'Flower', category: 'monosyllabic' },
+      { char: '鸡', pinyin: 'jī', tone: '1st', meaning: 'Chicken', category: 'monosyllabic' },
+      { char: '七', pinyin: 'qī', tone: '1st', meaning: 'Seven', category: 'monosyllabic' },
+      { char: '鞋', pinyin: 'xié', tone: '2nd', meaning: 'Shoes', category: 'monosyllabic' },
+      { char: '雪', pinyin: 'xuě', tone: '3rd', meaning: 'Snow', category: 'monosyllabic' },
+      { char: '三', pinyin: 'sān', tone: '1st', meaning: 'Three', category: 'monosyllabic' },
+      { char: '山', pinyin: 'shān', tone: '1st', meaning: 'Mountain', category: 'monosyllabic' },
+      { char: '钟', pinyin: 'zhōng', tone: '1st', meaning: 'Clock', category: 'monosyllabic' },
+      { char: '羊', pinyin: 'yáng', tone: '2nd', meaning: 'Sheep', category: 'monosyllabic' },
+      { char: '零', pinyin: 'líng', tone: '2nd', meaning: 'Zero', category: 'monosyllabic' },
+      { char: '菜', pinyin: 'cài', tone: '4th', meaning: 'Vegetable', category: 'monosyllabic' },
+      { char: '手', pinyin: 'shǒu', tone: '3rd', meaning: 'Hand', category: 'monosyllabic' },
+      { char: '熊', pinyin: 'xióng', tone: '2nd', meaning: 'Bear', category: 'monosyllabic' },
+      { char: '云', pinyin: 'yún', tone: '2nd', meaning: 'Cloud', category: 'monosyllabic' },
+      { char: '星', pinyin: 'xīng', tone: '1st', meaning: 'Star', category: 'monosyllabic' },
+      { char: '元', pinyin: 'yuán', tone: '2nd', meaning: 'Chinese currency unit', category: 'monosyllabic' },
+      { char: '人', pinyin: 'rén', tone: '2nd', meaning: 'Person', category: 'monosyllabic' },
+      { char: '船', pinyin: 'chuán', tone: '2nd', meaning: 'Boat', category: 'monosyllabic' },
+      { char: '床', pinyin: 'chuáng', tone: '2nd', meaning: 'Bed', category: 'monosyllabic' },
+      { char: '吃', pinyin: 'chī', tone: '1st', meaning: 'To eat', category: 'monosyllabic' },
+      { char: '热', pinyin: 'rè', tone: '4th', meaning: 'Hot', category: 'monosyllabic' },
+      
+      // Disyllabic Words with Pictures
+      { char: '咖啡', pinyin: 'kāfēi', tone: '1st + 1st', meaning: 'Coffee', category: 'disyllabic' },
+      { char: '可乐', pinyin: 'kělè', tone: '3rd + 4th', meaning: 'Cola', category: 'disyllabic' },
+      { char: '烤鸭', pinyin: 'kǎoyā', tone: '3rd + 1st', meaning: 'Roast duck', category: 'disyllabic' },
+      { char: '火锅', pinyin: 'huǒguō', tone: '3rd + 1st', meaning: 'Hot pot', category: 'disyllabic' },
+      { char: '地图', pinyin: 'dìtú', tone: '4th + 2nd', meaning: 'Map', category: 'disyllabic' },
+      { char: '飞机', pinyin: 'fēijī', tone: '1st + 1st', meaning: 'Airplane', category: 'disyllabic' },
+      { char: '毛笔', pinyin: 'máobǐ', tone: '2nd + 3rd', meaning: 'Writing brush', category: 'disyllabic' },
+      { char: '耳机', pinyin: 'ěrjī', tone: '3rd + 1st', meaning: 'Headphones', category: 'disyllabic' },
+      { char: '冰箱', pinyin: 'bīngxiāng', tone: '1st + 1st', meaning: 'Refrigerator', category: 'disyllabic' },
+      { char: '鸡蛋', pinyin: 'jīdàn', tone: '1st + 4th', meaning: 'Egg', category: 'disyllabic' },
+      { char: '司机', pinyin: 'sījī', tone: '1st + 1st', meaning: 'Driver', category: 'disyllabic' },
+      { char: '足球', pinyin: 'zúqiú', tone: '2nd + 2nd', meaning: 'Soccer/football', category: 'disyllabic' },
+      { char: '机场', pinyin: 'jīchǎng', tone: '1st + 3rd', meaning: 'Airport', category: 'disyllabic' },
+      { char: '爬山', pinyin: 'pá shān', tone: '2nd + 1st', meaning: 'To climb a mountain', category: 'disyllabic' },
+      { char: '手表', pinyin: 'shǒubiǎo', tone: '3rd + 3rd', meaning: 'Wristwatch', category: 'disyllabic' },
+      { char: '熊猫', pinyin: 'xióngmāo', tone: '2nd + 1st', meaning: 'Panda', category: 'disyllabic' },
+      
+      // Family Terms
+      { char: '妈妈', pinyin: 'māma', tone: '1st + neutral', meaning: 'Mom', category: 'family' },
+      { char: '爷爷', pinyin: 'yéye', tone: '2nd + neutral', meaning: 'Grandpa (paternal)', category: 'family' },
+      { char: '奶奶', pinyin: 'nǎinai', tone: '3rd + neutral', meaning: 'Grandma (paternal)', category: 'family' },
+      { char: '爸爸', pinyin: 'bàba', tone: '4th + neutral', meaning: 'Dad', category: 'family' },
+      
+      // Nationalities & Identities
+      { char: '中国', pinyin: 'Zhōngguó', tone: '1st + 2nd', meaning: 'China', category: 'nationalities' },
+      { char: '美国', pinyin: 'Měiguó', tone: '3rd + 2nd', meaning: 'United States', category: 'nationalities' },
+      { char: '中国人', pinyin: 'Zhōngguó rén', tone: '1st + 2nd + 2nd', meaning: 'Chinese person', category: 'nationalities' },
+      { char: '美国人', pinyin: 'Měiguó rén', tone: '3rd + 2nd + 2nd', meaning: 'American person', category: 'nationalities' },
+      { char: '老师', pinyin: 'lǎoshī', tone: '3rd + 1st', meaning: 'Teacher', category: 'nationalities' },
+      { char: '学生', pinyin: 'xuésheng', tone: '2nd + 1st', meaning: 'Student', category: 'nationalities' },
+      { char: '同学', pinyin: 'tóngxué', tone: '2nd + 2nd', meaning: 'Classmate', category: 'nationalities' },
+      { char: '朋友', pinyin: 'péngyou', tone: '2nd + 3rd', meaning: 'Friend', category: 'nationalities' },
+      { char: '汉语老师', pinyin: 'Hànyǔ lǎoshī', tone: '4th + 3rd + 3rd + 1st', meaning: 'Chinese language teacher', category: 'nationalities' },
+      
+      // Personal Pronouns
+      { char: '你', pinyin: 'nǐ', tone: '3rd', meaning: 'You [singular]', category: 'pronouns' },
+      { char: '您', pinyin: 'nín', tone: '2nd', meaning: 'You [polite form]', category: 'pronouns' },
+      { char: '你们', pinyin: 'nǐmen', tone: '3rd + neutral', meaning: 'You [plural]', category: 'pronouns' },
+      { char: '我', pinyin: 'wǒ', tone: '3rd', meaning: 'I, me', category: 'pronouns' },
+      { char: '他', pinyin: 'tā', tone: '1st', meaning: 'He, him', category: 'pronouns' },
+      { char: '她', pinyin: 'tā', tone: '1st', meaning: 'She, her', category: 'pronouns' },
+      { char: '什么', pinyin: 'shénme', tone: '2nd + neutral', meaning: 'What', category: 'pronouns' },
+      { char: '谁', pinyin: 'shéi', tone: '2nd', meaning: 'Who', category: 'pronouns' },
+      
+      // Question Words and Particles
+      { char: '吗', pinyin: 'ma', tone: 'neutral', meaning: 'Question particle', category: 'questions' },
+      { char: '的', pinyin: 'de', tone: 'neutral', meaning: 'Possessive particle', category: 'questions' },
+      
+      // Basic Verbs
+      { char: '是', pinyin: 'shì', tone: '4th', meaning: 'To be', category: 'verbs' },
+      { char: '叫', pinyin: 'jiào', tone: '4th', meaning: 'To call, to be called', category: 'verbs' },
+      { char: '不', pinyin: 'bù', tone: '4th', meaning: 'No, not', category: 'verbs' }
+    ];
+
+    // Set quiz tone for each word
+    words.forEach(word => {
+      if (word.tone.includes('→')) {
+        word.quizTone = word.tone.split('→')[1].trim();
+      } else {
+        word.quizTone = word.tone;
+      }
+      
+      // Determine dominant tone for categorization
+      if (word.tone.includes('+')) {
+        // For compound words, use the first tone for categorization
+        const firstTone = word.tone.split('+')[0].trim();
+        if (firstTone.includes('1st')) word.mainTone = 'first';
+        else if (firstTone.includes('2nd')) word.mainTone = 'second';
+        else if (firstTone.includes('3rd')) word.mainTone = 'third';
+        else if (firstTone.includes('4th')) word.mainTone = 'fourth';
+        else word.mainTone = 'neutral';
+      } else {
+        // For single-character words
+        if (word.tone.includes('1st')) word.mainTone = 'first';
+        else if (word.tone.includes('2nd')) word.mainTone = 'second';
+        else if (word.tone.includes('3rd')) word.mainTone = 'third';
+        else if (word.tone.includes('4th')) word.mainTone = 'fourth';
+        else word.mainTone = 'neutral';
+      }
+    });
+
+    // Function to determine tone pattern visualization
+    function getToneVisual(tone) {
+      if (tone === '1st' || tone.startsWith('1st')) {
+        return '<svg height="20" width="60"><line x1="5" y1="10" x2="55" y2="10" class="tone-line" /></svg>';
+      } else if (tone === '2nd' || tone.startsWith('2nd')) {
+        return '<svg height="20" width="60"><line x1="5" y1="18" x2="55" y2="2" class="tone-line" /></svg>';
+      } else if (tone === '3rd' || tone.startsWith('3rd')) {
+        return '<svg height="20" width="60"><path d="M5,10 Q30,20 55,10" class="tone-line" /></svg>';
+      } else if (tone === '4th' || tone.startsWith('4th')) {
+        return '<svg height="20" width="60"><line x1="5" y1="2" x2="55" y2="18" class="tone-line" /></svg>';
+      } else if (tone === 'neutral' || tone.includes('neutral')) {
+        return '<svg height="20" width="60"><line x1="5" y1="10" x2="55" y2="10" class="tone-line" style="stroke-dasharray: 2" /></svg>';
+      } else {
+        return '<svg height="20" width="60"><path d="M5,10 Q30,15 55,10" class="tone-line" style="stroke-dasharray: 3" /></svg>';
+      }
+    }
+
+    // Function to create a word card
+    function createWordCard(word) {
+      const card = document.createElement('div');
+      card.className = 'word-card';
+      
+      const toneVisual = getToneVisual(word.tone);
+      
+      card.innerHTML = `
+        <div class="character">${word.char}</div>
+        <div class="pinyin">${word.pinyin}</div>
+        <div class="tone-indicator">${toneVisual}</div>
+        <div class="meaning">${word.meaning}</div>
+      `;
+      
+      // Add event listener to play pronunciation (would need audio files in a real implementation)
+      card.addEventListener('click', () => {
+        // Highlight the card temporarily
+        card.style.backgroundColor = '#ffebee';
+        setTimeout(() => {
+          card.style.backgroundColor = '';
+        }, 300);
+      });
+      
+      return card;
+    }
+
+    // Function to populate all grids
+    function populateGrids() {
+      // Populate by tone
+      const firstToneWords = words.filter(w => w.mainTone === 'first');
+      const secondToneWords = words.filter(w => w.mainTone === 'second');
+      const thirdToneWords = words.filter(w => w.mainTone === 'third');
+      const fourthToneWords = words.filter(w => w.mainTone === 'fourth');
+      const neutralToneWords = words.filter(w => w.mainTone === 'neutral');
+      
+      const firstToneGrid = document.getElementById('first-tone-grid');
+      const secondToneGrid = document.getElementById('second-tone-grid');
+      const thirdToneGrid = document.getElementById('third-tone-grid');
+      const fourthToneGrid = document.getElementById('fourth-tone-grid');
+      const neutralToneGrid = document.getElementById('neutral-tone-grid');
+      
+      firstToneWords.forEach(word => firstToneGrid.appendChild(createWordCard(word)));
+      secondToneWords.forEach(word => secondToneGrid.appendChild(createWordCard(word)));
+      thirdToneWords.forEach(word => thirdToneGrid.appendChild(createWordCard(word)));
+      fourthToneWords.forEach(word => fourthToneGrid.appendChild(createWordCard(word)));
+      neutralToneWords.forEach(word => neutralToneGrid.appendChild(createWordCard(word)));
+      
+      // Populate by category
+      const categories = [
+        'greetings', 'classroom', 'monosyllabic', 'disyllabic', 
+        'family', 'nationalities', 'pronouns', 'questions', 'verbs'
+      ];
+      
+      categories.forEach(category => {
+        const categoryWords = words.filter(w => w.category === category);
+        const categoryGrid = document.getElementById(`${category}-grid`);
+        categoryWords.forEach(word => categoryGrid.appendChild(createWordCard(word)));
+      });
+    }
+
+    // Quiz state variables
+    let currentQuestion = null;
+    let quizStats = {
+      correct: 0,
+      total: 0,
+      sequence: 0
+    };
+    let answeredCorrectly = false;
+
+    // Function to generate a quiz question
+    function generateQuestion() {
+      // Reset state for new question
+      document.getElementById('quiz-feedback').textContent = '';
+      document.getElementById('quiz-hint').textContent = '';
+      document.getElementById('quiz-options').innerHTML = '';
+      answeredCorrectly = false;
+      
+      // Filter words based on category settings
+      let eligibleWords = [];
+      
+      const categorySettings = [
+        { id: 'quiz-cat-greetings', category: 'greetings' },
+        { id: 'quiz-cat-classroom', category: 'classroom' },
+        { id: 'quiz-cat-monosyllabic', category: 'monosyllabic' },
+        { id: 'quiz-cat-disyllabic', category: 'disyllabic' },
+        { id: 'quiz-cat-family', category: 'family' },
+        { id: 'quiz-cat-nationalities', category: 'nationalities' },
+        { id: 'quiz-cat-pronouns', category: 'pronouns' },
+        { id: 'quiz-cat-questions', category: 'questions' },
+        { id: 'quiz-cat-verbs', category: 'verbs' }
+      ];
+      
+      categorySettings.forEach(setting => {
+        if (document.getElementById(setting.id).checked) {
+          eligibleWords = eligibleWords.concat(words.filter(w => w.category === setting.category));
+        }
+      });
+      
+      // If no categories selected, enable all
+      if (eligibleWords.length === 0) {
+        eligibleWords = words;
+        // Select all checkboxes
+        categorySettings.forEach(setting => {
+          document.getElementById(setting.id).checked = true;
+        });
+      }
+      
+      // Choose a random word
+      const wordIndex = Math.floor(Math.random() * eligibleWords.length);
+      const word = eligibleWords[wordIndex];
+      
+      // Determine question type based on settings
+      const toneEnabled = document.getElementById('quiz-type-tone').checked;
+      const meaningEnabled = document.getElementById('quiz-type-meaning').checked;
+      
+      let questionType;
+      if (toneEnabled && meaningEnabled) {
+        questionType = Math.random() < 0.5 ? 'tone' : 'meaning';
+      } else if (toneEnabled) {
+        questionType = 'tone';
+      } else if (meaningEnabled) {
+        questionType = 'meaning';
+      } else {
+        // If neither is enabled, default to tone
+        questionType = 'tone';
+        document.getElementById('quiz-type-tone').checked = true;
+      }
+      
+      const questionEl = document.getElementById('quiz-question');
+      const characterEl = document.getElementById('quiz-character');
+      const optionsEl = document.getElementById('quiz-options');
+      
+      characterEl.textContent = word.char;
+      
+      let correctAnswer, options;
+      
+      if (questionType === 'tone') {
+        questionEl.textContent = `What is the tone pattern of "${word.pinyin}"?`;
+        correctAnswer = word.quizTone;
+        options = getUniqueOptions(word, 'tone');
+      } else {
+        questionEl.textContent = `What does "${word.pinyin}" mean?`;
+        correctAnswer = word.meaning;
+        options = getUniqueOptions(word, 'meaning');
+      }
+      
+      // Shuffle options
+      options.sort(() => Math.random() - 0.5);
+      
+      // Create option buttons
+      options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.textContent = option;
+        btn.dataset.value = option;
+        btn.onclick = () => checkAnswer(option, correctAnswer, word);
+        optionsEl.appendChild(btn);
+      });
+      
+      // Store current question data
+      currentQuestion = {
+        word: word,
+        type: questionType,
+        correctAnswer: correctAnswer
+      };
+      
+      // Update progress bar based on current sequence
+      updateProgressBar();
+    }
+    
+    // Function to get unique options for quiz
+    function getUniqueOptions(currentWord, type) {
+      let correctAnswer, allOptions;
+      
+      if (type === 'tone') {
+        correctAnswer = currentWord.quizTone;
+        
+        // Filter options based on syllable count
+        const isMultiSyllable = currentWord.quizTone.includes('+');
+        const neutralTone = currentWord.quizTone.includes('neutral');
+        
+        // Get options with similar structure
+        if (isMultiSyllable) {
+          allOptions = [...new Set(words.filter(w => w.quizTone.includes('+')).map(w => w.quizTone))];
+        } else if (neutralTone) {
+          allOptions = [...new Set(words.filter(w => w.quizTone.includes('neutral')).map(w => w.quizTone))];
+        } else {
+          allOptions = ['1st', '2nd', '3rd', '4th', 'neutral'];
+        }
+        
+      } else { // meaning
+        correctAnswer = currentWord.meaning;
+        // Get options from same category for more challenging quiz
+        const categoryWords = words.filter(w => w.category === currentWord.category);
+        if (categoryWords.length >= 4) {
+          allOptions = [...new Set(categoryWords.map(w => w.meaning))];
+        } else {
+          allOptions = [...new Set(words.map(w => w.meaning))];
+        }
+      }
+      
+      // Remove the correct answer so we don't duplicate it
+      allOptions = allOptions.filter(opt => opt !== correctAnswer);
+      
+      // Shuffle and take first 3
+      allOptions.sort(() => Math.random() - 0.5);
+      const wrongOptions = allOptions.slice(0, 3);
+      
+      // Add back the correct answer
+      return [correctAnswer, ...wrongOptions];
+    }
+    
+    // Function to check the answer
+    function checkAnswer(selected, correct, word) {
+      const feedbackEl = document.getElementById('quiz-feedback');
+      const hintEl = document.getElementById('quiz-hint');
+      const optionsEl = document.getElementById('quiz-options');
+      
+      // Disable all option buttons after an answer is selected
+      const buttons = optionsEl.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        
+        // Mark the correct and incorrect answers
+        if (btn.dataset.value === correct) {
+          btn.classList.add('correct');
+        } else if (btn.dataset.value === selected && selected !== correct) {
+          btn.classList.add('incorrect');
+        }
+      });
+      
+      // If not answered correctly already in this question
+      if (!answeredCorrectly) {
+        quizStats.total++;
+        
+        if (selected === correct) {
+          quizStats.correct++;
+          quizStats.sequence++;
+          feedbackEl.textContent = 'Correct!';
+          feedbackEl.style.color = 'green';
+          answeredCorrectly = true;
+        } else {
+          quizStats.sequence = 0;
+          feedbackEl.textContent = `Incorrect. The correct answer is "${correct}".`;
+          feedbackEl.style.color = 'red';
+          
+          // Show a hint about the word
+          if (currentQuestion.type === 'tone') {
+            hintEl.textContent = `Remember: ${word.char} (${word.pinyin}) means "${word.meaning}"`;
+          } else {
+            hintEl.textContent = `Remember: ${word.char} (${word.pinyin}) has tone pattern "${word.quizTone}"`;
+          }
+        }
+        
+        updateStats();
+      }
+    }
+    
+    // Function to update the quiz statistics display
+    function updateStats() {
+      document.getElementById('stat-correct').textContent = quizStats.correct;
+      document.getElementById('stat-total').textContent = quizStats.total;
+      
+      const accuracy = quizStats.total === 0 ? 0 : Math.round((quizStats.correct / quizStats.total) * 100);
+      document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
+      
+      // Update progress bar
+      updateProgressBar();
+    }
+    
+    // Function to update the progress bar
+    function updateProgressBar() {
+      const progressBar = document.getElementById('quiz-progress-bar');
+      // Calculate width based on current sequence (max out at 10 correct in a row)
+      const sequencePercentage = Math.min(quizStats.sequence * 10, 100);
+      progressBar.style.width = `${sequencePercentage}%`;
+      
+      // Change color based on sequence
+      if (sequencePercentage >= 80) {
+        progressBar.style.backgroundColor = '#4caf50'; // Green
+      } else if (sequencePercentage >= 40) {
+        progressBar.style.backgroundColor = '#ff9800'; // Orange
+      } else {
+        progressBar.style.backgroundColor = '#d32f2f'; // Red
+      }
+    }
+    
+    // Function to reset quiz stats
+    function resetQuizStats() {
+      quizStats = {
+        correct: 0,
+        total: 0,
+        sequence: 0
+      };
+      updateStats();
+    }
+    
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      populateGrids();
+      
+      // Category tab functionality
+      const categoryTabs = document.querySelectorAll('.category-tab');
+      categoryTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const targetId = tab.getAttribute('data-target');
+          const tabGroup = tab.parentElement;
+          
+          // Remove active class from all tabs in this group
+          tabGroup.querySelectorAll('.category-tab').forEach(t => {
+            t.classList.remove('active');
+          });
+          
+          // Add active class to clicked tab
+          tab.classList.add('active');
+          
+          // Hide all sections related to this tab group
+          const sections = document.querySelectorAll(`#${tabGroup.parentElement.id} .category-section, #${tabGroup.parentElement.id} .tone-section`);
+          sections.forEach(section => {
+            section.style.display = 'none';
+          });
+          
+          // Show the target section
+          document.getElementById(targetId).style.display = 'block';
+        });
+      });
+      
+      // Quiz mode button event
+      document.getElementById('quiz-mode-btn').addEventListener('click', () => {
+        document.getElementById('browse-content').style.display = 'none';
+        document.getElementById('quiz-mode').style.display = 'block';
+        resetQuizStats();
+        generateQuestion();
+      });
+      
+      // Back to browse button event
+      document.getElementById('back-to-browse').addEventListener('click', () => {
+        document.getElementById('quiz-mode').style.display = 'none';
+        document.getElementById('browse-content').style.display = 'block';
+      });
+      
+      // Next question button event
+      document.getElementById('next-question').addEventListener('click', () => {
+        generateQuestion();
+      });
+      
+      // Back to top button functionality
+      const backToTopBtn = document.getElementById('back-to-top');
+      window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.add('visible');
+        } else {
+          backToTopBtn.classList.remove('visible');
+        }
+      });
+      
+      backToTopBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      });
+      
+      // Quiz settings change events
+      const settingsInputs = document.querySelectorAll('.quiz-settings input');
+      settingsInputs.forEach(input => {
+        input.addEventListener('change', () => {
+          // Ensure at least one option is selected for each setting type
+          const typeInputs = document.querySelectorAll('#quiz-type-tone, #quiz-type-meaning');
+          const anyTypeChecked = Array.from(typeInputs).some(el => el.checked);
+          
+          if (!anyTypeChecked) {
+            document.getElementById('quiz-type-tone').checked = true;
+          }
+          
+          // Generate a new question with updated settings
+          generateQuestion();
+        });
+      });
+    });
+  </script>
+</body>
+</html>
